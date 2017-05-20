@@ -1,5 +1,7 @@
 'use strict';
 
+const { extractMedia } = require('../utils/twitterTools');
+
 module.exports = app => {
   class TwitterService extends app.Service {
     * extractMedia(tweetUrl) {
@@ -7,12 +9,14 @@ module.exports = app => {
       const TWEET_ID_REGEXP = /status\/(\d+)$/i;
       const matchResult = TWEET_ID_REGEXP.exec(tweetUrl);
 
-      if (!matchResult || matchResult.length !== 2) {
-        return null;
+      // cannot get tweet id
+      if (!matchResult || matchResult.length < 2) {
+        return [];
       }
 
       const tweetId = matchResult[1];
-      let result = [];
+      let resources = [];
+
       yield twitterClient.get('statuses/show', { id: tweetId })
         .then(tweet => {
           const { extended_entities: { media } } = tweet;
@@ -20,15 +24,15 @@ module.exports = app => {
             return;
           }
 
-          result = media
-            .filter(item => item.type === 'photo')
-            .map(item => item.media_url);
+          // console.dir(tweet.extended_entities.media, { depth: 10, colors: true });
+
+          resources = extractMedia(media);
         })
         .catch(error => {
           throw error;
         });
 
-      return result;
+      return resources;
     }
   }
 

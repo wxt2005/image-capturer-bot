@@ -7,14 +7,17 @@ module.exports = app => {
       const { request: { body } } = ctx;
 
       const { message: { text } } = body;
-      let media = '';
+      let resources = [];
 
       if (text && /https?:\/\/twitter\.com/.test(text)) {
-        media = yield ctx.service.twitter.extractMedia(text);
-        yield ctx.service.dropbox.uploadMedia({ type: 'twitter', media });
+        resources = yield ctx.service.twitter.extractMedia(text);
+
+        if (resources.length) {
+          yield ctx.service.dropbox.uploadMedia({ type: 'twitter', resources });
+        }
       }
 
-      ctx.body = { success: true, result: media };
+      ctx.body = { success: true, result: resources };
     }
   }
 

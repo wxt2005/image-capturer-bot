@@ -2,44 +2,22 @@
 
 module.exports = app => {
   class DropboxService extends app.Service {
-    * uploadMedia({ type, media } = {}) {
+    * uploadMedia({ type, resources = [] } = {}) {
       if (!type) {
         throw new Error('You must specify a type to upload media');
       }
 
-      if (!media || !Array.isArray(media)) {
-        throw new Error('media must be an array');
+      if (!resources || !Array.isArray(resources)) {
+        throw new Error('Resources must be an array');
       }
 
       const { dropboxClient, config: { dropboxSavePath } } = app;
 
-      let fileNameRegexp = /.+/;
-
-      switch (type) {
-        case 'twitter':
-          fileNameRegexp = /media\/(.+)$/;
-          break;
-
-        default:
-          // noop
-      }
-
       try {
-        yield media.map(url => {
-          const exec = fileNameRegexp.exec(url);
-          let fileName = '';
-
-          if (!exec || exec.length !== 2) {
-            fileName = encodeURIComponent(url);
-          } else {
-            fileName = exec[1];
-          }
-
-          return dropboxClient.filesSaveUrl({
-            path: `${dropboxSavePath}/${type}/${fileName}`,
-            url,
-          });
-        });
+        yield resources.map(resource => dropboxClient.filesSaveUrl({
+          path: `${dropboxSavePath}/${type}/${resource.fileName}`,
+          url: resource.url,
+        }));
       } catch (e) {
         throw e;
       }
