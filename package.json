@@ -1,0 +1,47 @@
+{
+  "name": "image-capturer-bot",
+  "version": "1.0.0",
+  "description": "A telegram bot for capturing images.",
+  "private": true,
+  "dependencies": {
+    "co": "4.6.0",
+    "dropbox": "2.5.3",
+    "egg": "^1.2.1",
+    "lodash": "4.17.4",
+    "twitter": "1.7.0"
+  },
+  "devDependencies": {
+    "autod": "^2.8.0",
+    "autod-egg": "^1.0.0",
+    "egg-bin": "^3.3.2",
+    "egg-ci": "^1.6.0",
+    "egg-mock": "^3.5.0",
+    "eslint": "^3.19.0",
+    "eslint-config-egg": "^4.1.0",
+    "webstorm-disable-index": "^1.1.2"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "scripts": {
+    "start": "pm2 start index.js --name \"image_capturer_bot\"",
+    "stop": "pm2 stop image_capturer_bot",
+    "restart": "pm2 restart image_capturer_bot",
+    "dev": "egg-bin dev",
+    "test": "npm run lint -- --fix && npm run test-local",
+    "test-local": "egg-bin test",
+    "cov": "egg-bin cov",
+    "lint": "eslint .",
+    "ci": "npm run lint && npm run cov",
+    "autod": "autod"
+  },
+  "ci": {
+    "version": "6"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "wxt2005@gmail.com",
+  "license": "MIT"
+}
