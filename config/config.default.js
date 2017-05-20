@@ -9,7 +9,7 @@ module.exports = appInfo => {
   config.keys = appInfo.name + '_1495301965697_6640';
 
   // dropbox path
-  config.dropboxSavePath = '/auto_capture';
+  config.dropboxSavePath = '/auto_capture_test';
 
   // ignore json CSRF for now
   config.security = {
