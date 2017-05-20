@@ -11,5 +11,5 @@ module.exports = {
     access_token_secret: '',
   },
   // dropbox auth token
-  dropboxToken: '-6',
+  dropboxToken: '',
 };
