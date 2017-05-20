@@ -1,26 +1,49 @@
 # image-capturer-bot
 
-A telegram bot for capturing images.
+A telegram bot server for capturing images and saving to Dropbox.
 
-## QuickStart
+## Support services
 
-<!-- add docs here for user -->
+* [Twitter](https://twitter.com)
 
-see [egg docs][egg] for more detail.
+## Notice
+
+This server depends on telegram bot's webhook, however, no auto registering feature yet. So we need to manually  [setwebhook](https://core.telegram.org/bots/api#setwebhook), try use `curl` or [Postman](https://www.getpostman.com).
+
+### Preparing
+
+#### Telegram
+
+You need to create a telegram bot account, and obtain a token.
+
+[Telegram Bot API](https://core.telegram.org/bots/api)
+
+#### Twitter
+
+Create an app on Twitter, then generate an access token.
+
+[Application Management](https://apps.twitter.com)
+
+#### Dropbox
+
+Create an app on Dropbox, then generate an access token.
+
+[App Console](https://www.dropbox.com/developers/apps)
 
 ### Development
 ```shell
+$ cp config/_tokens.js config/tokens.js # and fill in all your tokens
 $ npm install
 $ npm run dev
-$ open http://localhost:7001/news
 ```
 
 ### Deploy
 
-Use `EGG_SERVER_ENV=prod` to enable prod mode
+This project use [PM2](http://pm2.keymetrics.io) to deploy in production. Install it before deploying.
 
 ```shell
-$ EGG_SERVER_ENV=prod npm start
+$ npm install pm2 -g # install PM2
+$ EGG_SERVER_ENV=prod PORT=7001 npm start
 ```
 
 ### npm scripts
