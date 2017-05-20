@@ -25,10 +25,21 @@ module.exports = app => {
       }
 
       try {
-        yield media.map(url => dropboxClient.filesSaveUrl({
-          path: `${dropboxSavePath}/${type}/${fileNameRegexp.exec(url)[1]}`,
-          url,
-        }));
+        yield media.map(url => {
+          const exec = fileNameRegexp.exec(url);
+          let fileName = '';
+
+          if (!exec || exec.length !== 2) {
+            fileName = encodeURIComponent(url);
+          } else {
+            fileName = exec[1];
+          }
+
+          return dropboxClient.filesSaveUrl({
+            path: `${dropboxSavePath}/${type}/${fileName}`,
+            url,
+          });
+        });
       } catch (e) {
         throw e;
       }
