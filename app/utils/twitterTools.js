@@ -89,7 +89,7 @@ const extractMedia = mediaArray => {
   }
 
   const resources = _.chain(mediaArray)
-                .map(mediaObject => extractors[mediaObject.type](mediaObject))
+                .map(mediaObject => (extractors[mediaObject.type] ? extractors[mediaObject.type](mediaObject) : null))
                 .filter(url => !!url)
                 .uniq()
                 .value();
