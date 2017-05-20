@@ -20,7 +20,9 @@ module.exports = app => {
             return;
           }
 
-          result = media.map(item => item.media_url);
+          result = media
+            .filter(item => item.type === 'photo')
+            .map(item => item.media_url);
         })
         .catch(error => {
           throw error;
