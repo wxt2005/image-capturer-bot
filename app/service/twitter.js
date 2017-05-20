@@ -19,7 +19,7 @@ module.exports = app => {
 
       yield twitterClient.get('statuses/show', { id: tweetId })
         .then(tweet => {
-          const { extended_entities: { media } } = tweet;
+          const { extended_entities: { media } = {} } = tweet;
           if (!media || !media.length) {
             return;
           }
