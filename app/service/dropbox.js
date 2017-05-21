@@ -2,7 +2,7 @@
 
 module.exports = app => {
   class DropboxService extends app.Service {
-    * uploadMedia({ type, resources = [] } = {}) {
+    * uploadMediaByUrls({ type, resources = [] } = {}) {
       if (!type) {
         throw new Error('You must specify a type to upload media');
       }
@@ -23,6 +23,18 @@ module.exports = app => {
       }
 
       return true;
+    }
+
+    * uploadMediaByStreams({ type, resources = [] } = {}) {
+      const { dropboxClient, config: { dropboxSavePath } } = app;
+      const uploadStreams = resources.map(resource => resource.stream.pipe(
+        dropboxClient.createUploadStream({
+          path: `${dropboxSavePath}/${type}/${resource.fileName}`,
+        })
+        .on('error', err => { throw err; })
+      ));
+
+      return uploadStreams;
     }
   }
 
