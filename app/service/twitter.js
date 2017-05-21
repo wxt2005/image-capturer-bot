@@ -6,15 +6,15 @@ module.exports = app => {
   class TwitterService extends app.Service {
     * extractMedia(tweetUrl) {
       const { twitterClient } = app;
-      const TWEET_ID_REGEXP = /status\/(\d+)$/i;
-      const matchResult = TWEET_ID_REGEXP.exec(tweetUrl);
+      const TWEET_REGEXP = /^https?:\/\/twitter\.com\/(.+?)\/status\/(\d+)$/i;
+      const matchResult = TWEET_REGEXP.exec(tweetUrl);
 
-      // cannot get tweet id
-      if (!matchResult || matchResult.length < 2) {
+      // twitter url not match
+      if (!matchResult || matchResult.length < 3) {
         return [];
       }
 
-      const tweetId = matchResult[1];
+      const [ , username, tweetId ] = matchResult;
       let resources = [];
 
       yield twitterClient.get('statuses/show', { id: tweetId })
@@ -24,7 +24,9 @@ module.exports = app => {
             return;
           }
 
-          resources = extractMedia(media);
+          // filename format: @username_hash.png
+          resources = extractMedia(media).map(mediaObject => Object.assign(
+            {}, mediaObject, { fileName: `@${username}_${mediaObject.fileName}` }));
         })
         .catch(error => {
           throw error;
