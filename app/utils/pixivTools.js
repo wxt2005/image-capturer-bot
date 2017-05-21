@@ -6,9 +6,9 @@ const PAGE_URL_REGEXP = /https?:\/\/www\.pixiv\.net\/member_illust\.php\?mode=me
 /**
  * Transform medium size image url to original size image url
  * @param  {String} mediumUrl medium size image url
- * @return {String}           original size image url
+ * @return {String}           original size image url, without file extension
  */
-const transformPictureUrl = mediumUrl => mediumUrl.replace(MEDIUM_IMAGE_REGEXP, (match, p1) => `https://i.pximg.net/img-original${p1}.png`);
+const transformPictureUrl = mediumUrl => mediumUrl.replace(MEDIUM_IMAGE_REGEXP, (match, p1) => `https://i.pximg.net/img-original${p1}`);
 
 /**
  * Get id from page url

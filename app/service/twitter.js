@@ -24,8 +24,6 @@ module.exports = app => {
             return;
           }
 
-          // console.dir(tweet.extended_entities.media, { depth: 10, colors: true });
-
           resources = extractMedia(media);
         })
         .catch(error => {

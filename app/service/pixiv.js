@@ -1,5 +1,6 @@
 'use strict';
 
+// const co = require('co');
 const {
   transformPictureUrl,
   getIdFromPageurl,
@@ -32,18 +33,35 @@ module.exports = app => {
       const mediumUrl = regExec[1];
       const originalUrl = transformPictureUrl(mediumUrl);
 
-      const imageResponse = yield ctx.curl(originalUrl, {
-        headers: {
-          Referer: 'https://www.pixiv.net/',
-        },
-        streaming: true,
-      });
+      const result = [];
+      const possibleFileExtensions = [ '.jpg', '.png' ];
 
-      return [{
-        fileName: `${id}.png`,
-        stream: imageResponse.res,
-        url: originalUrl,
-      }];
+      // have not yet figured out how to detect real image extension without login, try both
+      for (const extension of possibleFileExtensions) {
+        try {
+          const imageResponse = yield ctx.curl(`${originalUrl}${extension}`, {
+            headers: {
+              Referer: 'https://www.pixiv.net/',
+            },
+            streaming: true,
+          });
+
+          if (imageResponse.status === 200) {
+            result.push({
+              fileName: `${id}${extension}`,
+              stream: imageResponse.res,
+              url: `${originalUrl}${extension}`,
+            });
+
+            break;
+          }
+        } catch (e) {
+          // slient failure
+          ctx.logger.error(e);
+        }
+      }
+
+      return result;
     }
   }
 
