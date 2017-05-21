@@ -4,7 +4,8 @@ A telegram bot server for capturing images and saving to Dropbox.
 
 ## Support services
 
-* [Twitter](https://twitter.com)
+* [Twitter](https://twitter.com) : `https://twitter.com/Kiracus/status/:id`
+* [Pixiv](https://www.pixiv.net) : `https://www.pixiv.net/member_illust.php?mode=medium&illust_id=:id`
 
 ## Notice
 
