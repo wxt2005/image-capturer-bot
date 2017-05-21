@@ -8,6 +8,8 @@ module.exports = app => {
       const { ctx } = this;
       const { request: { body } } = ctx;
 
+      ctx.logger.info('Received message', JSON.stringify(body));
+
       const { message: { text } } = body;
       let resources = [];
 
