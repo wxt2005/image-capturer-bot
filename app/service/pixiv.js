@@ -15,6 +15,8 @@ module.exports = app => {
 
       const pageResponse = yield ctx.curl(pageUrl, {
         dataType: 'text',
+        // http link redirect
+        followRedirect: true,
       });
 
       if (!pageResponse.data) {
