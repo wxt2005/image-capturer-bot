@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const { extractUrlsFromMessage } = require('../utils/telegramTools');
 
 module.exports = app => {
   class EndpointController extends app.Controller {
@@ -10,26 +11,34 @@ module.exports = app => {
 
       ctx.logger.info('Received message', JSON.stringify(body));
 
-      const { message: { text } } = body;
+      const { message } = body;
+      const urls = extractUrlsFromMessage(message);
       let resources = [];
 
-      // twitter
-      if (/^https?:\/\/twitter\.com/i.test(text)) {
-        resources = yield ctx.service.twitter.extractMedia(text);
+      for (const url of urls) {
+        let resourcesOfCurrentUrl = [];
 
-        if (resources.length) {
-          yield ctx.service.dropbox.uploadMediaByUrls({ type: 'twitter', resources });
+        // twitter
+        if (/^https?:\/\/twitter\.com/i.test(url)) {
+          resourcesOfCurrentUrl = yield ctx.service.twitter.extractMedia(url);
+
+          if (resourcesOfCurrentUrl.length) {
+            yield ctx.service.dropbox.uploadMediaByUrls({ type: 'twitter', resources: resourcesOfCurrentUrl });
+          }
         }
+
+        // pixiv
+        if (/^https?:\/\/www\.pixiv\.net/i.test(url)) {
+          resourcesOfCurrentUrl = yield ctx.service.pixiv.extractMedia(url);
+
+          if (resourcesOfCurrentUrl.length) {
+            yield ctx.service.dropbox.uploadMediaByStreams({ type: 'pixiv', resources: resourcesOfCurrentUrl });
+          }
+        }
+
+        resources = [ ...resources, ...resourcesOfCurrentUrl ];
       }
 
-      // pixiv
-      if (/^https?:\/\/www\.pixiv\.net/i.test(text)) {
-        resources = yield ctx.service.pixiv.extractMedia(text);
-
-        if (resources.length) {
-          yield ctx.service.dropbox.uploadMediaByStreams({ type: 'pixiv', resources });
-        }
-      }
 
       ctx.body = {
         success: true,
