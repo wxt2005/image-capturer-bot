@@ -1,33 +1,22 @@
 'use strict';
 
+const _ = require('lodash');
+
 module.exports = app => {
   class DropboxService extends app.Service {
     * uploadMediaByUrls({ type, resources = [] } = {}) {
-      if (!type) {
-        throw new Error('You must specify a type to upload media');
-      }
-
-      if (!resources || !Array.isArray(resources)) {
-        throw new Error('Resources must be an array');
-      }
-
       const { dropboxClient, config: { dropboxSavePath } } = app;
 
-      try {
-        yield resources.map(resource => dropboxClient.filesSaveUrl({
-          path: `${dropboxSavePath}/${type}/${resource.fileName}`,
-          url: resource.url,
-        }));
-      } catch (e) {
-        throw e;
-      }
-
-      return true;
+      return yield resources.map(resource => dropboxClient.filesSaveUrl({
+        path: `${dropboxSavePath}/${type}/${resource.fileName}`,
+        url: resource.url,
+      }));
     }
 
     * uploadMediaByStreams({ type, resources = [] } = {}) {
       const { dropboxClient, config: { dropboxSavePath } } = app;
-      const uploadStreams = resources.map(resource => {
+
+      return resources.map(resource => {
         return resource.stream.pipe(
           dropboxClient.createUploadStream({
             path: `${dropboxSavePath}/${type}/${resource.fileName}`,
@@ -36,8 +25,24 @@ module.exports = app => {
           .on('error', err => { throw err; })
         );
       });
+    }
 
-      return uploadStreams;
+    * uploadMedia({ type, resources = [] } = {}) {
+      if (!type) {
+        throw new Error('You must specify a type to upload media');
+      }
+
+      if (!resources || !Array.isArray(resources)) {
+        throw new Error('Resources must be an array');
+      }
+
+      const [ pendingStreams, pendingUrls ] = _.partition(resources, resource => !!resource.stream);
+      console.log(pendingStreams, pendingUrls);
+
+      return yield [
+        ...this.uploadMediaByStreams({ type, resources: pendingStreams }),
+        ...this.uploadMediaByUrls({ type, resources: pendingUrls }),
+      ];
     }
   }
 

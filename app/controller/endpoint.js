@@ -15,6 +15,7 @@ module.exports = app => {
       const { message } = body;
       const urls = extractUrlsFromMessage(message);
       let resources = [];
+      let uploadPendingList = [];
 
       for (const url of urls) {
         const urlObject = urlUtils.parse(url);
@@ -25,8 +26,8 @@ module.exports = app => {
           resourcesOfCurrentUrl = yield ctx.service.twitter.extractMedia(url);
 
           if (resourcesOfCurrentUrl.length) {
-            yield ctx.service.dropbox.uploadMediaByUrls({ type: 'twitter', resources: resourcesOfCurrentUrl });
-            yield ctx.service.telegram.sendMediaByUrls({ type: 'twitter', resources: resourcesOfCurrentUrl });
+            uploadPendingList = [ ...uploadPendingList, { type: 'twitter', resources: resourcesOfCurrentUrl }];
+            // yield ctx.service.telegram.sendMediaByUrls({ type: 'twitter', resources: resourcesOfCurrentUrl });
           }
         }
 
@@ -35,13 +36,14 @@ module.exports = app => {
           resourcesOfCurrentUrl = yield ctx.service.pixiv.extractMedia(url);
 
           if (resourcesOfCurrentUrl.length) {
-            yield ctx.service.dropbox.uploadMediaByStreams({ type: 'pixiv', resources: resourcesOfCurrentUrl });
+            uploadPendingList = [ ...uploadPendingList, { type: 'pixiv', resources: resourcesOfCurrentUrl }];
           }
         }
 
         resources = [ ...resources, ...resourcesOfCurrentUrl ];
       }
 
+      yield uploadPendingList.map(item => ctx.service.dropbox.uploadMedia(item));
 
       ctx.body = {
         success: true,
