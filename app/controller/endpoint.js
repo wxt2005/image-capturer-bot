@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const urlUtils = require('url');
 const { extractUrlsFromMessage } = require('../utils/telegramTools');
 
 module.exports = app => {
@@ -16,10 +17,11 @@ module.exports = app => {
       let resources = [];
 
       for (const url of urls) {
+        const urlObject = urlUtils.parse(url);
         let resourcesOfCurrentUrl = [];
 
         // twitter
-        if (/^https?:\/\/twitter\.com/i.test(url)) {
+        if (urlObject.hostname === 'twitter.com') {
           resourcesOfCurrentUrl = yield ctx.service.twitter.extractMedia(url);
 
           if (resourcesOfCurrentUrl.length) {
@@ -29,7 +31,7 @@ module.exports = app => {
         }
 
         // pixiv
-        if (/^https?:\/\/www\.pixiv\.net/i.test(url)) {
+        if (urlObject.hostname === 'www.pixiv.net') {
           resourcesOfCurrentUrl = yield ctx.service.pixiv.extractMedia(url);
 
           if (resourcesOfCurrentUrl.length) {
