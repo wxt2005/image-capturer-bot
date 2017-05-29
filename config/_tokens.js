@@ -12,5 +12,6 @@ module.exports = {
   },
   // dropbox auth token
   dropboxToken: '',
+  // telegram channel account
   channelAccount: '',
 };
