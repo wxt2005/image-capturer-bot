@@ -58,6 +58,11 @@ module.exports = app => {
     }
 
     * sendMedia({ resources = [] } = {}) {
+      // you should fill in channelAccount to send message
+      if (!channelAccount) {
+        return [];
+      }
+
       if (!Array.isArray(resources) || !resources.length) {
         return [];
       }
