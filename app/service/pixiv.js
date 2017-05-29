@@ -11,7 +11,7 @@ const fetchUgoiraDefaultParams = {
 
 const fetchIllustDetailEndpoint = 'https://app-api.pixiv.net/v1/illust/detail';
 const fetchIllustDetailDefaultParams = {
-  filter: 'for_ios',
+  // filter: 'for_ios',
   illust_id: '',
 };
 const headersForFetchIllustDetail = {
