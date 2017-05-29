@@ -27,7 +27,6 @@ module.exports = app => {
 
           if (resourcesOfCurrentUrl.length) {
             uploadPendingList = [ ...uploadPendingList, { type: 'twitter', resources: resourcesOfCurrentUrl }];
-            // yield ctx.service.telegram.sendMediaByUrls({ type: 'twitter', resources: resourcesOfCurrentUrl });
           }
         }
 
@@ -44,6 +43,7 @@ module.exports = app => {
       }
 
       yield uploadPendingList.map(item => ctx.service.dropbox.uploadMedia(item));
+      yield uploadPendingList.map(item => ctx.service.telegram.sendMedia(item));
 
       ctx.body = {
         success: true,

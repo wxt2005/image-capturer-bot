@@ -37,7 +37,6 @@ module.exports = app => {
       }
 
       const [ pendingStreams, pendingUrls ] = _.partition(resources, resource => !!resource.stream);
-      console.log(pendingStreams, pendingUrls);
 
       return yield [
         ...this.uploadMediaByStreams({ type, resources: pendingStreams }),
