@@ -3,6 +3,12 @@
 // const co = require('co');
 const urlUtils = require('url');
 
+const fetchUgoiraVideoEndpoint = 'http://ugoira.dataprocessingclub.org/convert';
+const fetchUgoiraDefaultParams = {
+  format: 'webm',
+  url: '',
+};
+
 const fetchIllustDetailEndpoint = 'https://app-api.pixiv.net/v1/illust/detail';
 const fetchIllustDetailDefaultParams = {
   filter: 'for_ios',
@@ -22,6 +28,59 @@ const FILE_NAME_REGEXP = /.+\/(.+?\.\w+?)$/i;
 
 module.exports = app => {
   class PixivService extends app.Service {
+    extractPhoto(illustDetail) {
+      let resources = [];
+
+      if (illustDetail.page_count === 1) {
+        const originalImageUrl = illustDetail.meta_single_page.original_image_url;
+        const fileName = originalImageUrl.match(FILE_NAME_REGEXP)[1];
+        resources.push({
+          fileName,
+          url: originalImageUrl,
+          type: 'photo',
+        });
+      } else {
+        const tempResources = illustDetail.meta_pages.map(page => {
+          const originalImageUrl = page.image_urls.original;
+          const fileName = originalImageUrl.match(FILE_NAME_REGEXP)[1];
+
+          return {
+            fileName,
+            url: originalImageUrl,
+            type: 'photo',
+          };
+        });
+
+        resources = [ ...resources, ...tempResources ];
+      }
+
+      return resources;
+    }
+
+    * extractUgoira(pageUrl, illustDetail) {
+      const { ctx } = this;
+      const resources = [];
+
+      let videoUrl = '';
+      try {
+        videoUrl = yield ctx.curl(fetchUgoiraVideoEndpoint, {
+          data: Object.assign({}, fetchUgoiraDefaultParams, { url: pageUrl }),
+        }).then(response => JSON.parse(response.data.toString()).url);
+      } catch (e) {
+        throw new Error(`fecth ugoira video failed, id: ${illustDetail.id}`);
+      }
+
+      if (videoUrl) {
+        resources.push({
+          fileName: videoUrl.match(FILE_NAME_REGEXP)[1],
+          url: videoUrl,
+          type: 'video',
+        });
+      }
+
+      return resources;
+    }
+
     * extractMedia(pageUrl) {
       const { ctx } = this;
       const urlObject = urlUtils.parse(pageUrl, true);
@@ -49,31 +108,34 @@ module.exports = app => {
         return resources;
       }
 
-      if (illustDetail.page_count === 1) {
-        const originalImageUrl = illustDetail.meta_single_page.original_image_url;
-        const fileName = originalImageUrl.match(FILE_NAME_REGEXP)[1];
-        resources.push({
-          fileName,
-          url: originalImageUrl,
-          type: 'photo',
-        });
-      } else {
-        const tempResources = illustDetail.meta_pages.map(page => {
-          const originalImageUrl = page.image_urls.original;
-          const fileName = originalImageUrl.match(FILE_NAME_REGEXP)[1];
+      switch (illustDetail.type) {
+        // regular illustrations
+        case 'illust':
+          resources = [
+            ...resources,
+            ...this.extractPhoto(illustDetail),
+          ];
+          break;
 
-          return {
-            fileName,
-            url: originalImageUrl,
-            type: 'photo',
-          };
-        });
+        // pixiv animation
+        case 'ugoira':
+          resources = [
+            ...resources,
+            ...(yield this.extractUgoira(pageUrl, illustDetail)),
+          ];
+          break;
 
-        resources = [ ...resources, ...tempResources ];
+        default:
+          // noop
       }
 
       for (const resource of resources) {
-        const { url } = resource;
+        const { url, type } = resource;
+        // just download pixiv images
+        if (type !== 'photo') {
+          continue;
+        }
+
         let imageResponse = null;
 
         try {
