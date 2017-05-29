@@ -22,6 +22,15 @@ const extractUrlsFromMessage = message => {
   return urls;
 };
 
+/**
+ * Get telegram api mehod url
+ * @param  {String} token api token
+ * @param  {String} methodName api method name
+ * @return {String}            api url
+ */
+const getMethodUrl = (token, methodName) => `https://api.telegram.org/bot${token}/${methodName}`;
+
 module.exports = {
   extractUrlsFromMessage,
+  getMethodUrl,
 };

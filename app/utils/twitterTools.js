@@ -46,6 +46,7 @@ const extractPhoto = mediaObject => {
   return {
     url,
     fileName,
+    type: 'photo',
   };
 };
 
@@ -68,6 +69,7 @@ const extractAnimatedGif = mediaObject => {
   return {
     url,
     fileName,
+    type: 'video',
   };
 };
 

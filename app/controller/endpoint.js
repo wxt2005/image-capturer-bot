@@ -24,6 +24,7 @@ module.exports = app => {
 
           if (resourcesOfCurrentUrl.length) {
             yield ctx.service.dropbox.uploadMediaByUrls({ type: 'twitter', resources: resourcesOfCurrentUrl });
+            yield ctx.service.telegram.sendMediaByUrls({ type: 'twitter', resources: resourcesOfCurrentUrl });
           }
         }
 
