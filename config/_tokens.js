@@ -12,4 +12,5 @@ module.exports = {
   },
   // dropbox auth token
   dropboxToken: '',
+  channelAccount: '',
 };
