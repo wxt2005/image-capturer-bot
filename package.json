@@ -8,6 +8,7 @@
     "dropbox": "2.5.3",
     "dropbox-stream": "wxt2005/dropbox-stream",
     "egg": "^1.2.1",
+    "egg-development-proxyagent": "^1.0.0",
     "lodash": "4.17.4",
     "twitter": "1.7.0"
   },
