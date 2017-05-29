@@ -1,67 +1,98 @@
 'use strict';
 
 // const co = require('co');
-const {
-  transformPictureUrl,
-  getIdFromPageurl,
-} = require('../utils/pixivTools');
+const urlUtils = require('url');
 
-const MEDIUM_IMAGE_REGEXP = /src="(https:\/\/i\.pximg\.net\/c\/600x600\/img-master\/img\/.+master1200\.jpg)"/i;
+const fetchIllustDetailEndpoint = 'https://app-api.pixiv.net/v1/illust/detail';
+const fetchIllustDetailDefaultParams = {
+  filter: 'for_ios',
+  illust_id: '',
+};
+const headersForFetchIllustDetail = {
+  'App-OS': 'ios',
+  'App-OS-Version': '9.3.3',
+  'App-Version': '6.1.2',
+  'User-Agent': 'PixivIOSApp/6.1.2 (iOS 9.0; iPhone8,2)',
+};
+const headersForFetchImage = {
+  Referer: 'https://www.pixiv.net/',
+};
+const FILE_NAME_REGEXP = /.+\/(.+?\.\w+?)$/i;
+
 
 module.exports = app => {
   class PixivService extends app.Service {
     * extractMedia(pageUrl) {
       const { ctx } = this;
-      const id = getIdFromPageurl(pageUrl);
+      const urlObject = urlUtils.parse(pageUrl, true);
+      const illustId = urlObject.query.illust_id;
 
-      const pageResponse = yield ctx.curl(pageUrl, {
-        dataType: 'text',
-        // http link redirect
-        followRedirect: true,
-      });
-
-      if (!pageResponse.data) {
-        throw new Error(`fetch pixiv page failed, id: ${id}`);
+      if (!illustId) {
+        return [];
       }
 
-      const regExec = MEDIUM_IMAGE_REGEXP.exec(pageResponse.data);
+      let illustDetail = null;
 
-      if (!regExec || regExec.length < 2) {
-        throw new Error(`get medium image url from html failed, id: ${id}`);
+      try {
+        illustDetail = yield ctx.curl(fetchIllustDetailEndpoint, {
+          data: Object.assign({}, fetchIllustDetailDefaultParams, { illust_id: illustId }),
+          headers: headersForFetchIllustDetail,
+        }).then(response => JSON.parse(response.data.toString()).illust);
+
+      } catch (e) {
+        throw new Error(`fetch pixiv illust detail failed, id: ${illustId}`);
       }
 
-      const mediumUrl = regExec[1];
-      const originalUrl = transformPictureUrl(mediumUrl);
+      let resources = [];
 
-      const result = [];
-      const possibleFileExtensions = [ '.jpg', '.png' ];
+      if (!illustDetail) {
+        return resources;
+      }
 
-      // have not yet figured out how to detect real image extension without login, try both
-      for (const extension of possibleFileExtensions) {
+      if (illustDetail.page_count === 1) {
+        const originalImageUrl = illustDetail.meta_single_page.original_image_url;
+        const fileName = originalImageUrl.match(FILE_NAME_REGEXP)[1];
+        resources.push({
+          fileName,
+          url: originalImageUrl,
+          type: 'photo',
+        });
+      } else {
+        const tempResources = illustDetail.meta_pages.map(page => {
+          const originalImageUrl = page.image_urls.original;
+          const fileName = originalImageUrl.match(FILE_NAME_REGEXP)[1];
+
+          return {
+            fileName,
+            url: originalImageUrl,
+            type: 'photo',
+          };
+        });
+
+        resources = [ ...resources, ...tempResources ];
+      }
+
+      for (const resource of resources) {
+        const { url } = resource;
+        let imageResponse = null;
+
         try {
-          const imageResponse = yield ctx.curl(`${originalUrl}${extension}`, {
-            headers: {
-              Referer: 'https://www.pixiv.net/',
-            },
+          imageResponse = yield ctx.curl(url, {
+            headers: headersForFetchImage,
             streaming: true,
           });
-
-          if (imageResponse.status === 200) {
-            result.push({
-              fileName: `${id}${extension}`,
-              stream: imageResponse.res,
-              url: `${originalUrl}${extension}`,
-            });
-
-            break;
-          }
         } catch (e) {
-          // slient failure
-          ctx.logger.error(e);
+          continue;
         }
+
+        if (imageResponse.status !== 200) {
+          continue;
+        }
+
+        resource.stream = imageResponse.res;
       }
 
-      return result;
+      return resources;
     }
   }
 
