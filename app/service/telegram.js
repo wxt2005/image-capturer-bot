@@ -27,7 +27,8 @@ module.exports = app => {
           chat_id: channelAccount,
           [type]: url,
         },
-      }).then(response => response.data.toString()));
+        dataType: 'json',
+      }).then(response => response.data));
 
       return results;
     }
@@ -50,6 +51,7 @@ module.exports = app => {
           headers: form.headers(),
           stream: form,
           dataType: 'json',
+          timeout: [ 5000, 300000 ],
         })
         .then(response => response.data);
       });
