@@ -14,4 +14,9 @@ module.exports = {
   dropboxToken: '',
   // telegram channel account
   channelAccount: '',
+  // pixiv login info
+  pixivAuth: {
+    username: '',
+    password: '',
+  },
 };
