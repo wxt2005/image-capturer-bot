@@ -8,18 +8,6 @@ const fetchUgoiraDefaultParams = {
   format: 'webm',
   url: '',
 };
-
-const fetchIllustDetailEndpoint = 'https://app-api.pixiv.net/v1/illust/detail';
-const fetchIllustDetailDefaultParams = {
-  // filter: 'for_ios',
-  illust_id: '',
-};
-const headersForFetchIllustDetail = {
-  'App-OS': 'ios',
-  'App-OS-Version': '9.3.3',
-  'App-Version': '6.1.2',
-  'User-Agent': 'PixivIOSApp/6.1.2 (iOS 9.0; iPhone8,2)',
-};
 const headersForFetchImage = {
   Referer: 'https://www.pixiv.net/',
 };
@@ -82,6 +70,7 @@ module.exports = app => {
     }
 
     * extractMedia(pageUrl) {
+      const { pixivClient } = app;
       const { ctx } = this;
       const urlObject = urlUtils.parse(pageUrl, true);
       const illustId = urlObject.query.illust_id;
@@ -93,11 +82,8 @@ module.exports = app => {
       let illustDetail = null;
 
       try {
-        illustDetail = yield ctx.curl(fetchIllustDetailEndpoint, {
-          data: Object.assign({}, fetchIllustDetailDefaultParams, { illust_id: illustId }),
-          headers: headersForFetchIllustDetail,
-        }).then(response => JSON.parse(response.data.toString()).illust);
-
+        illustDetail = yield pixivClient.illustDetail(illustId)
+                              .then(data => data.illust);
       } catch (e) {
         throw new Error(`fetch pixiv illust detail failed, id: ${illustId}`);
       }
@@ -111,6 +97,7 @@ module.exports = app => {
       switch (illustDetail.type) {
         // regular illustrations
         case 'illust':
+        case 'manga':
           resources = [
             ...resources,
             ...this.extractPhoto(illustDetail),

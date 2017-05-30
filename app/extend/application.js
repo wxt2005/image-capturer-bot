@@ -6,6 +6,9 @@ const TWITTER_CLIENT = Symbol('Application#twitterClient');
 const Dropbox = require('dropbox');
 const DROPBOX_CLIENT = Symbol('Application#dropboxClient');
 
+const Pixiv = require('../utils/PixivApi');
+const PIXIV_CLIENT = Symbol('Application#PixivClient');
+
 const dropboxStream = require('dropbox-stream');
 
 module.exports = {
@@ -52,5 +55,15 @@ module.exports = {
     }
 
     return this[DROPBOX_CLIENT];
+  },
+
+  get pixivClient() {
+    if (!this[PIXIV_CLIENT]) {
+      const { pixivAuth: { username, password } } = this.config;
+
+      this[PIXIV_CLIENT] = new Pixiv({ username, password });
+    }
+
+    return this[PIXIV_CLIENT];
   },
 };
