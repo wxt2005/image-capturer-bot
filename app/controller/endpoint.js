@@ -4,6 +4,9 @@ const _ = require('lodash');
 const urlUtils = require('url');
 const { extractUrlsFromMessage } = require('../utils/telegramTools');
 
+const TWITTER_HOSTNAME = /^(?:www\.)?twitter\.com$/i;
+const PIXIV_HOSTNAME = /^(?:www|touch)\.pixiv\.net$/i;
+
 module.exports = app => {
   class EndpointController extends app.Controller {
     * message() {
@@ -18,11 +21,11 @@ module.exports = app => {
       let uploadPendingList = [];
 
       for (const url of urls) {
-        const urlObject = urlUtils.parse(url);
+        const parsedUrl = urlUtils.parse(url);
         let resourcesOfCurrentUrl = [];
 
         // twitter
-        if (urlObject.hostname === 'twitter.com') {
+        if (TWITTER_HOSTNAME.test(parsedUrl.hostname)) {
           resourcesOfCurrentUrl = yield ctx.service.twitter.extractMedia(url);
 
           if (resourcesOfCurrentUrl.length) {
@@ -31,7 +34,7 @@ module.exports = app => {
         }
 
         // pixiv
-        if (urlObject.hostname === 'www.pixiv.net') {
+        if (PIXIV_HOSTNAME.test(parsedUrl.hostname)) {
           resourcesOfCurrentUrl = yield ctx.service.pixiv.extractMedia(url);
 
           if (resourcesOfCurrentUrl.length) {
