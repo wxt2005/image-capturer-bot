@@ -1,13 +1,15 @@
 'use strict';
 
 const { extractMedia } = require('../utils/twitterTools');
+const urlUtils = require('url');
 
 module.exports = app => {
   class TwitterService extends app.Service {
     * extractMedia(tweetUrl) {
       const { twitterClient } = app;
-      const TWEET_REGEXP = /^https?:\/\/twitter\.com\/(.+?)\/status\/(\d+)$/i;
-      const matchResult = TWEET_REGEXP.exec(tweetUrl);
+      const parsedUrl = urlUtils.parse(tweetUrl);
+      const TWEET_REGEXP = /^\/(.+?)\/status\/(\d+)$/i;
+      const matchResult = TWEET_REGEXP.exec(parsedUrl.pathname);
 
       // twitter url not match
       if (!matchResult || matchResult.length < 3) {
