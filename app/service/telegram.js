@@ -20,12 +20,13 @@ module.exports = app => {
         return [];
       }
 
-      const results = yield resources.map(({ url, type }) => ctx.curl(methodUrls[type], {
+      const results = yield resources.map(({ url, type, source }) => ctx.curl(methodUrls[type], {
         method: 'POST',
         contentType: 'json',
         data: {
           chat_id: channelAccount,
           [type]: url,
+          caption: source,
         },
         dataType: 'json',
       }).then(response => response.data));
@@ -40,10 +41,11 @@ module.exports = app => {
         return [];
       }
 
-      const results = yield resources.map(({ type, stream, fileName }) => {
+      const results = yield resources.map(({ type, stream, fileName, source }) => {
         const form = new FormStream();
 
         form.field('chat_id', channelAccount);
+        form.field('caption', source);
         form.stream(type, stream, fileName);
 
         return ctx.curl(methodUrls[type], {
