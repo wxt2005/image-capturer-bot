@@ -139,6 +139,8 @@ module.exports = app => {
         }
 
         resource.stream = imageResponse.res;
+        // attach source url
+        resource.source = pageUrl;
       }
 
       return resources;

@@ -28,7 +28,10 @@ module.exports = app => {
 
           // filename format: @username_hash.png
           resources = extractMedia(media).map(mediaObject => Object.assign(
-            {}, mediaObject, { fileName: `@${username}_${mediaObject.fileName}` }));
+            {}, mediaObject, {
+              fileName: `@${username}_${mediaObject.fileName}`,
+              source: tweetUrl,
+            }));
         })
         .catch(error => {
           throw error;
