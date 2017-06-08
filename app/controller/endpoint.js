@@ -16,6 +16,15 @@ module.exports = app => {
       ctx.logger.info('Received message', JSON.stringify(body));
 
       const { message } = body;
+
+      if (!message) {
+        ctx.body = {
+          success: false,
+        };
+
+        return;
+      }
+
       const urls = extractUrlsFromMessage(message);
       let resources = [];
       let uploadPendingList = [];
