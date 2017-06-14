@@ -19,4 +19,6 @@ module.exports = {
     username: '',
     password: '',
   },
+  // wechat robot server end point
+  wechatEndpoint: '',
 };

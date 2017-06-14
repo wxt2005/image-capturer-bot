@@ -54,8 +54,17 @@ module.exports = app => {
         resources = [ ...resources, ...resourcesOfCurrentUrl ];
       }
 
-      yield uploadPendingList.map(item => ctx.service.dropbox.uploadMedia(item));
-      yield uploadPendingList.map(item => ctx.service.telegram.sendMedia(item));
+      if (app.config.dropboxToken) {
+        yield uploadPendingList.map(item => ctx.service.dropbox.uploadMedia(item));
+      }
+
+      if (app.config.channelAccount) {
+        yield uploadPendingList.map(item => ctx.service.telegram.sendMedia(item));
+      }
+
+      if (app.config.wechatEndpoint) {
+        yield uploadPendingList.map(item => ctx.service.wechat.sendImages(item));
+      }
 
       ctx.body = {
         success: true,
