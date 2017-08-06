@@ -9,6 +9,7 @@ const getMethodUrl = _.partial(require('../utils/telegramTools').getMethodUrl, b
 const methodUrls = {
   photo: getMethodUrl('sendPhoto'),
   video: getMethodUrl('sendVideo'),
+  document: getMethodUrl('sendDocument'),
 };
 
 module.exports = app => {

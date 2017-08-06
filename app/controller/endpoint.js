@@ -6,6 +6,7 @@ const { extractUrlsFromMessage } = require('../utils/telegramTools');
 
 const TWITTER_HOSTNAME = /^(?:www\.)?twitter\.com$/i;
 const PIXIV_HOSTNAME = /^(?:www|touch)\.pixiv\.net$/i;
+const TUMBLR_HOSTNAME = /tumblr\.com$/i;
 
 module.exports = app => {
   class EndpointController extends app.Controller {
@@ -48,6 +49,14 @@ module.exports = app => {
 
           if (resourcesOfCurrentUrl.length) {
             uploadPendingList = [ ...uploadPendingList, { type: 'pixiv', resources: resourcesOfCurrentUrl }];
+          }
+        }
+
+        if (TUMBLR_HOSTNAME.test(parsedUrl.hostname)) {
+          resourcesOfCurrentUrl = yield ctx.service.tumblr.extractMedia(url);
+
+          if (resourcesOfCurrentUrl.length) {
+            uploadPendingList = [ ...uploadPendingList, { type: 'tumblr', resources: resourcesOfCurrentUrl }];
           }
         }
 
