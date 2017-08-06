@@ -7,21 +7,21 @@
     "co": "4.6.0",
     "dropbox": "2.5.3",
     "dropbox-stream": "wxt2005/dropbox-stream",
-    "egg": "^1.2.1",
+    "egg": "1.7.0",
     "egg-development-proxyagent": "^1.0.0",
     "formstream": "^1.1.0",
     "lodash": "4.17.4",
     "twitter": "1.7.0",
-    "urllib": "^2.22.0"
+    "urllib": "2.24.0"
   },
   "devDependencies": {
-    "autod": "^2.8.0",
+    "autod": "2.9.0",
     "autod-egg": "^1.0.0",
-    "egg-bin": "^3.3.2",
-    "egg-ci": "^1.6.0",
-    "egg-mock": "^3.5.0",
-    "eslint": "^3.19.0",
-    "eslint-config-egg": "^4.1.0",
+    "egg-bin": "4.1.0",
+    "egg-ci": "1.8.0",
+    "egg-mock": "3.9.0",
+    "eslint": "4.4.0",
+    "eslint-config-egg": "5.0.0",
     "webstorm-disable-index": "^1.1.2"
   },
   "engines": {
