@@ -42,15 +42,15 @@ class PixivApi {
       data: requestData,
       dataType: 'json',
     })
-    .then(response => {
-      this.auth = response.data.response;
-      this.lastAuthTime = Date.now();
+      .then(response => {
+        this.auth = response.data.response;
+        this.lastAuthTime = Date.now();
 
-      return response.data.response;
-    })
-    .catch(err => {
-      throw err;
-    });
+        return response.data.response;
+      })
+      .catch(err => {
+        throw err;
+      });
   }
 
   /**
@@ -76,15 +76,15 @@ class PixivApi {
       data: requestData,
       dataType: 'json',
     })
-    .then(response => {
-      this.auth = response.data.response;
-      this.lastAuthTime = Date.now();
+      .then(response => {
+        this.auth = response.data.response;
+        this.lastAuthTime = Date.now();
 
-      return response.data.response;
-    })
-    .catch(err => {
-      throw err;
-    });
+        return response.data.response;
+      })
+      .catch(err => {
+        throw err;
+      });
   }
 
   /**

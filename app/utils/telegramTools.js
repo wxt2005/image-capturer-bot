@@ -15,9 +15,9 @@ const extractUrlsFromMessage = message => {
   }
 
   const urls = _.chain(entities)
-                .filter(entity => entity.type === 'url')
-                .map(entity => text.slice(entity.offset, entity.offset + entity.length))
-                .value();
+    .filter(entity => entity.type === 'url')
+    .map(entity => text.slice(entity.offset, entity.offset + entity.length))
+    .value();
 
   return urls;
 };

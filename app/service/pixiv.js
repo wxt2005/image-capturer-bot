@@ -83,7 +83,7 @@ module.exports = app => {
 
       try {
         illustDetail = yield pixivClient.illustDetail(illustId)
-                              .then(data => data.illust);
+          .then(data => data.illust);
       } catch (e) {
         throw new Error(`fetch pixiv illust detail failed, id: ${illustId}`);
       }

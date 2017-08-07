@@ -60,10 +60,10 @@ const extractAnimatedGif = mediaObject => {
   const fileNameRegexp = /tweet_video\/(.+)$/;
   const { video_info: { variants } } = mediaObject;
   const url = _.chain(variants)
-                    .filter(item => item.content_type === MP4_CONTENT_TYPE)
-                    .head()
-                    .get('url')
-                    .value();
+    .filter(item => item.content_type === MP4_CONTENT_TYPE)
+    .head()
+    .get('url')
+    .value();
   const fileName = extractFileNameFromUrl(fileNameRegexp, url);
 
   return {
@@ -91,10 +91,10 @@ const extractMedia = mediaArray => {
   }
 
   const resources = _.chain(mediaArray)
-                .map(mediaObject => (extractors[mediaObject.type] ? extractors[mediaObject.type](mediaObject) : null))
-                .filter(url => !!url)
-                .uniq()
-                .value();
+    .map(mediaObject => (extractors[mediaObject.type] ? extractors[mediaObject.type](mediaObject) : null))
+    .filter(url => !!url)
+    .uniq()
+    .value();
 
   return resources;
 };

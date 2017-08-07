@@ -56,7 +56,7 @@ module.exports = app => {
           dataType: 'json',
           timeout: [ 5000, 300000 ],
         })
-        .then(response => response.data);
+          .then(response => response.data);
       });
 
       return results;

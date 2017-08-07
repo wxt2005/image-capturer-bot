@@ -22,7 +22,7 @@ module.exports = app => {
             path: `${dropboxSavePath}/${type}/${resource.fileName}`,
           })
           // .on('progress', res => console.log(res))
-          .on('error', err => { throw err; })
+            .on('error', err => { throw err; })
         );
       });
     }
