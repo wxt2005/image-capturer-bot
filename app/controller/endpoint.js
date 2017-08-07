@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 const urlUtils = require('url');
-const { extractUrlsFromMessage } = require('../utils/telegramTools');
+const { extractUrlsFromMessage, extractFullSizePhotoObject } = require('../utils/telegramTools');
 
 const TWITTER_HOSTNAME = /^(?:www\.)?twitter\.com$/i;
 const PIXIV_HOSTNAME = /^(?:www|touch)\.pixiv\.net$/i;
@@ -26,9 +26,19 @@ module.exports = app => {
         return;
       }
 
-      const urls = extractUrlsFromMessage(message);
       let resources = [];
       let uploadPendingList = [];
+
+      const urls = extractUrlsFromMessage(message);
+
+      if (message.photo) {
+        const photoObject = extractFullSizePhotoObject(message);
+        const telegramFileResouces = yield ctx.service.telegram.getFileUrls({ fileIds: [ photoObject.file_id ] });
+
+        if (telegramFileResouces.length) {
+          uploadPendingList = [ ...uploadPendingList, { type: 'unknown', resources: telegramFileResouces }];
+        }
+      }
 
       for (const url of urls) {
         const parsedUrl = urlUtils.parse(url);

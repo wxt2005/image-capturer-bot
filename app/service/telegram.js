@@ -10,6 +10,7 @@ const methodUrls = {
   photo: getMethodUrl('sendPhoto'),
   video: getMethodUrl('sendVideo'),
   document: getMethodUrl('sendDocument'),
+  getFile: getMethodUrl('getFile'),
 };
 
 module.exports = app => {
@@ -21,12 +22,12 @@ module.exports = app => {
         return [];
       }
 
-      const results = yield resources.map(({ url, type, source }) => ctx.curl(methodUrls[type], {
+      const results = yield resources.map(({ url, type, source, fileId }) => ctx.curl(methodUrls[type], {
         method: 'POST',
         contentType: 'json',
         data: {
           chat_id: channelAccount,
-          [type]: url,
+          [type]: fileId || url,
           caption: source,
         },
         dataType: 'json',
@@ -78,6 +79,43 @@ module.exports = app => {
         ...this.sendMediaByStreams({ resources: pendingStreams }),
         ...this.sendMediaByUrls({ resources: pendingUrls }),
       ];
+    }
+
+    * getFileUrls({ fileIds = [] } = {}) {
+      const { ctx } = this;
+
+      return yield Promise.all(fileIds.map(fileId => {
+        return ctx.curl(`${methodUrls.getFile}?file_id=${fileId}`, {
+          timeout: [ 5000, 40000 ],
+          dataType: 'json',
+          gzip: true,
+        })
+          .then(response => {
+            if (response.status === 200 && response.data.ok && response.data.result.file_path) {
+              const filePath = response.data.result.file_path;
+              const extension = /\.(\w+)$/gi.exec(filePath)[1];
+              return {
+                url: `https://api.telegram.org/file/bot${botToken}/${filePath}`,
+                fileId,
+                fileName: `${fileId}.${extension}`,
+                type: 'photo',
+              };
+            }
+
+            return null;
+          })
+          .catch(error => {
+            ctx.logger.warn(error);
+
+            return null;
+          });
+      }))
+        .then(results => results.filter(resource => !!resource))
+        .catch(error => {
+          ctx.logger.warn(error);
+
+          return [];
+        });
     }
   }
 
