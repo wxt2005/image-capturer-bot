@@ -16,7 +16,7 @@ module.exports = app => {
 
       ctx.logger.info('Received message', JSON.stringify(body));
 
-      const { message } = body;
+      const { message, message: { chat: { id: chatId }, message_id: messageId } } = body;
 
       if (!message) {
         ctx.body = {
@@ -43,6 +43,24 @@ module.exports = app => {
       for (const url of urls) {
         const parsedUrl = urlUtils.parse(url);
         let resourcesOfCurrentUrl = [];
+
+        const memcachedKey = `visited_${encodeURIComponent(url)}`;
+
+        const visited = !!(yield ctx.loadFromCache(memcachedKey));
+
+        if (visited) {
+          yield ctx.service.telegram.sendMessage({
+            chatId,
+            replyTo: messageId,
+            message: '图片重复',
+          });
+
+          console.log(`${url} 图片重复`);
+
+          continue;
+        }
+
+        yield ctx.saveToCache(`visited_${encodeURIComponent(url)}`, 1);
 
         // twitter
         if (TWITTER_HOSTNAME.test(parsedUrl.hostname)) {

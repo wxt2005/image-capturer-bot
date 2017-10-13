@@ -11,10 +11,33 @@ const methodUrls = {
   video: getMethodUrl('sendVideo'),
   document: getMethodUrl('sendDocument'),
   getFile: getMethodUrl('getFile'),
+  sendMessage: getMethodUrl('sendMessage'),
 };
 
 module.exports = app => {
   class TelegramService extends app.Service {
+    * sendMessage({ chatId, message, replyTo } = {}) {
+      const { ctx } = this;
+
+      if (!message) {
+        return null;
+      }
+
+      const results = yield ctx.curl(methodUrls.sendMessage, {
+        method: 'POST',
+        contentType: 'json',
+        data: {
+          chat_id: chatId,
+          text: message,
+          reply_to_message_id: replyTo,
+          disable_web_page_preview: true,
+        },
+        dataType: 'json',
+      }).then(response => response.data);
+
+      return results;
+    }
+
     * sendMediaByUrls({ resources = [] } = {}) {
       const { ctx } = this;
 
