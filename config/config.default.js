@@ -20,6 +20,7 @@ module.exports = appInfo => {
 
   config.memStore = {
     directory: './snapshot',
+    saveSnapshotInterval: '1m',
   };
 
   Object.assign(config, tokens);
