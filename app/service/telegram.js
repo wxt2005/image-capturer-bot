@@ -5,17 +5,83 @@ const FormStream = require('formstream');
 const { botToken, channelAccount } = require('../../config/tokens');
 const getMethodUrl = _.partial(require('../utils/telegramTools').getMethodUrl, botToken);
 
-
 const methodUrls = {
   photo: getMethodUrl('sendPhoto'),
   video: getMethodUrl('sendVideo'),
   document: getMethodUrl('sendDocument'),
   getFile: getMethodUrl('getFile'),
   sendMessage: getMethodUrl('sendMessage'),
+  editMessageReplyMarkup: getMethodUrl('editMessageReplyMarkup'),
 };
+
+const inlineKeyboardMarkup = JSON.stringify({
+  inline_keyboard: [[
+    {
+      text: 'Like',
+      callback_data: JSON.stringify({ like: true }),
+    },
+  ]],
+});
 
 module.exports = app => {
   class TelegramService extends app.Service {
+    * updateButtons({ chatId, messageId, userId, data } = {}) {
+      if (!chatId || !messageId || !data || !userId) {
+        return null;
+      }
+
+      const { ctx, ctx: { app: { memStore } } } = this;
+
+      const memPath = `messages.${chatId}.${messageId}`;
+      const messageData = memStore.get(memPath);
+      let jsonData = {};
+
+      try {
+        jsonData = JSON.parse(data);
+      } catch (e) {
+        return;
+      }
+
+      if (!messageData) {
+        return;
+      }
+
+      if (jsonData.like) {
+        if (Array.isArray(messageData.likeUsers) && messageData.likeUsers.includes(userId)) {
+          console.log(`Duplicate like, userId: ${userId}`);
+          return;
+        }
+
+        messageData.likes++;
+
+        if (!messageData.likeUsers) {
+          messageData.likeUsers = [];
+        }
+
+        messageData.likeUsers.push(userId);
+
+        yield ctx.curl(methodUrls.editMessageReplyMarkup, {
+          method: 'POST',
+          contentType: 'json',
+          data: {
+            chat_id: chatId,
+            message_id: messageId,
+            reply_markup: JSON.stringify({
+              inline_keyboard: [[
+                {
+                  text: `Like (${messageData.likes})`,
+                  callback_data: JSON.stringify({ like: true }),
+                },
+              ]],
+            }),
+          },
+          dataType: 'json',
+        }).then(response => response.data);
+
+        yield memStore.set(memPath, messageData);
+      }
+    }
+
     * sendMessage({ chatId, message, replyTo } = {}) {
       const { ctx } = this;
 
@@ -38,28 +104,37 @@ module.exports = app => {
       return results;
     }
 
-    * sendMediaByUrls({ resources = [] } = {}) {
+    * sendMediaByUrls({ resources = [], withLikeButton = false } = {}) {
       const { ctx } = this;
 
       if (!Array.isArray(resources) || !resources.length) {
         return [];
       }
 
-      const results = yield resources.map(({ url, type, source, fileId }) => ctx.curl(methodUrls[type], {
-        method: 'POST',
-        contentType: 'json',
-        data: {
-          chat_id: channelAccount,
-          [type]: fileId || url,
-          caption: source,
-        },
-        dataType: 'json',
-      }).then(response => response.data));
+      const results = yield resources.map(({ url, type, source, fileId }) => {
+        const requestObj = {
+          method: 'POST',
+          contentType: 'json',
+          data: {
+            chat_id: channelAccount,
+            [type]: fileId || url,
+            caption: source,
+          },
+          dataType: 'json',
+        };
+
+        if (withLikeButton) {
+          requestObj.data.reply_markup = inlineKeyboardMarkup;
+        }
+
+        return ctx.curl(methodUrls[type], requestObj)
+          .then(response => response.data);
+      });
 
       return results;
     }
 
-    * sendMediaByStreams({ resources = [] } = {}) {
+    * sendMediaByStreams({ resources = [], withLikeButton = false } = {}) {
       const { ctx } = this;
 
       if (!Array.isArray(resources) || !resources.length) {
@@ -71,6 +146,11 @@ module.exports = app => {
 
         form.field('chat_id', channelAccount);
         form.field('caption', source);
+
+        if (withLikeButton) {
+          form.field('reply_markup', inlineKeyboardMarkup);
+        }
+
         form.stream(type, stream, fileName);
 
         return ctx.curl(methodUrls[type], {
@@ -87,6 +167,8 @@ module.exports = app => {
     }
 
     * sendMedia({ resources = [] } = {}) {
+      const { ctx: { app: { memStore } } } = this;
+
       // you should fill in channelAccount to send message
       if (!channelAccount) {
         return [];
@@ -98,10 +180,30 @@ module.exports = app => {
 
       const [ pendingStreams, pendingUrls ] = _.partition(resources, resource => !!resource.stream);
 
-      return yield [
-        ...this.sendMediaByStreams({ resources: pendingStreams }),
-        ...this.sendMediaByUrls({ resources: pendingUrls }),
+      const results = [
+        ...yield this.sendMediaByStreams({ resources: pendingStreams, withLikeButton: true }),
+        ...yield this.sendMediaByUrls({ resources: pendingUrls, withLikeButton: true }),
       ];
+
+      for (const result of results) {
+        const { ok } = result;
+
+        if (!ok) {
+          continue;
+        }
+
+        const { result: { message_id, chat: { id: chatId } } } = result;
+
+        const memPath = `messages.${chatId}.${message_id}`;
+        let messageData = memStore.get(memPath);
+
+        if (!messageData) {
+          messageData = { likes: 0, likeUsers: [] };
+          yield memStore.set(memPath, messageData);
+        }
+      }
+
+      return results;
     }
 
     * getFileUrls({ fileIds = [] } = {}) {

@@ -17,7 +17,23 @@ module.exports = app => {
 
       ctx.logger.info('Received message', JSON.stringify(body));
 
-      const { message, message: { chat: { id: chatId }, message_id: messageId } } = body;
+      const { message, message: { chat: { id: chatId }, message_id: messageId }, callback_query } = body;
+
+      if (callback_query) {
+        const { from: { id: userId }, message: { message_id: messageId, chat: { id: chatId } }, data } = callback_query;
+        yield ctx.service.telegram.updateButtons({
+          messageId,
+          chatId,
+          data,
+          userId,
+        });
+
+        ctx.body = {
+          success: true,
+        };
+
+        return;
+      }
 
       if (!message) {
         ctx.body = {
