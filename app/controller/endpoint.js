@@ -17,7 +17,7 @@ module.exports = app => {
 
       ctx.logger.info('Received message', JSON.stringify(body));
 
-      const { message, message: { chat: { id: chatId }, message_id: messageId }, callback_query } = body;
+      const { message, callback_query } = body;
 
       if (callback_query) {
         const { from: { id: userId }, message: { message_id: messageId, chat: { id: chatId } }, data } = callback_query;
@@ -42,6 +42,8 @@ module.exports = app => {
 
         return;
       }
+
+      const { chat: { id: chatId }, message_id: messageId } = message;
 
       let resources = [];
       let uploadPendingList = [];
