@@ -24,6 +24,10 @@ module.exports = appInfo => {
     },
   };
 
+  config.memStore = {
+    directory: './snapshot',
+  };
+
   Object.assign(config, tokens);
 
   return config;

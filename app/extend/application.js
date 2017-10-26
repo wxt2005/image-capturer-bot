@@ -11,7 +11,20 @@ const PIXIV_CLIENT = Symbol('Application#PixivClient');
 
 const dropboxStream = require('dropbox-stream');
 
+const Store = require('./Store');
+const MEM_STORE = Symbol('Application#MemStore');
+
 module.exports = {
+  get memStore() {
+    if (!this[MEM_STORE]) {
+      this[MEM_STORE] = new Store({
+        directory: this.config.memStore.directory,
+      });
+    }
+
+    return this[MEM_STORE];
+  },
+
   get twitterClient() {
     if (!this[TWITTER_CLIENT]) {
       this[TWITTER_CLIENT] = new Twitter(this.config.twitterAuth);
