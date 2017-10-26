@@ -101,6 +101,7 @@ class Store {
         const lastSnapshotVersionContent = fs.readFileSync(this.lastSnapshotVersionPath, { encoding: 'utf8' });
         if (lastSnapshotVersionContent) {
           this.lastSnapshotVersion = parseInt(lastSnapshotVersionContent, 10);
+          this.operationId = this.lastSnapshotVersion;
         }
       } catch (e) {
         // empty file
