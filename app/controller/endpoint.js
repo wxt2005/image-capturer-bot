@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const md5 = require('md5');
 const urlUtils = require('url');
 const { extractUrlsFromMessage, extractFullSizePhotoObject } = require('../utils/telegramTools');
 
@@ -44,7 +45,8 @@ module.exports = app => {
         const parsedUrl = urlUtils.parse(url);
         let resourcesOfCurrentUrl = [];
 
-        const memKey = encodeURIComponent(url);
+        const urlMD5 = md5(url);
+        const memKey = `urls.${urlMD5}`;
         const existMemValue = memStore.get(memKey);
 
         if (existMemValue) {
@@ -59,7 +61,7 @@ module.exports = app => {
           continue;
         }
 
-        yield memStore.set(memKey, {});
+        yield memStore.set(memKey, true);
 
         // twitter
         if (TWITTER_HOSTNAME.test(parsedUrl.hostname)) {
