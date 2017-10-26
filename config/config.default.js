@@ -18,12 +18,6 @@ module.exports = appInfo => {
     },
   };
 
-  config.memcached = {
-    client: {
-      hosts: [ '127.0.0.1:11211' ], // The memcached cluster list.
-    },
-  };
-
   config.memStore = {
     directory: './snapshot',
   };

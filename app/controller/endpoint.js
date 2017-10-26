@@ -12,7 +12,7 @@ module.exports = app => {
   class EndpointController extends app.Controller {
     * message() {
       const { ctx } = this;
-      const { request: { body } } = ctx;
+      const { request: { body }, app: { memStore } } = ctx;
 
       ctx.logger.info('Received message', JSON.stringify(body));
 
@@ -44,11 +44,10 @@ module.exports = app => {
         const parsedUrl = urlUtils.parse(url);
         let resourcesOfCurrentUrl = [];
 
-        const memcachedKey = `visited_${encodeURIComponent(url)}`;
+        const memKey = encodeURIComponent(url);
+        const existMemValue = memStore.get(memKey);
 
-        const visited = !!(yield ctx.loadFromCache(memcachedKey));
-
-        if (visited) {
+        if (existMemValue) {
           yield ctx.service.telegram.sendMessage({
             chatId,
             replyTo: messageId,
@@ -60,7 +59,7 @@ module.exports = app => {
           continue;
         }
 
-        yield ctx.saveToCache(`visited_${encodeURIComponent(url)}`, 1);
+        yield memStore.set(memKey, {});
 
         // twitter
         if (TWITTER_HOSTNAME.test(parsedUrl.hostname)) {
@@ -92,15 +91,27 @@ module.exports = app => {
       }
 
       if (app.config.dropboxToken) {
-        yield uploadPendingList.map(item => ctx.service.dropbox.uploadMedia(item));
+        try {
+          yield uploadPendingList.map(item => ctx.service.dropbox.uploadMedia(item));
+        } catch (e) {
+          console.error(e);
+        }
       }
 
       if (app.config.channelAccount) {
-        yield uploadPendingList.map(item => ctx.service.telegram.sendMedia(item));
+        try {
+          yield uploadPendingList.map(item => ctx.service.telegram.sendMedia(item));
+        } catch (e) {
+          console.error(e);
+        }
       }
 
       if (app.config.wechatEndpoint) {
-        yield uploadPendingList.map(item => ctx.service.wechat.sendImages(item));
+        try {
+          yield uploadPendingList.map(item => ctx.service.wechat.sendImages(item));
+        } catch (e) {
+          console.error(e);
+        }
       }
 
       ctx.body = {

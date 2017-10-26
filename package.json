@@ -9,7 +9,6 @@
     "dropbox-stream": "wxt2005/dropbox-stream",
     "egg": "1.7.0",
     "egg-development-proxyagent": "^1.0.0",
-    "egg-memcached": "^1.0.1",
     "formstream": "^1.1.0",
     "fs-extra": "^4.0.2",
     "lodash": "4.17.4",
