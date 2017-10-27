@@ -17,22 +17,30 @@ module.exports = app => {
 
       ctx.logger.info('Received message', JSON.stringify(body));
 
-      const { message, callback_query } = body;
+      let message = body.message || null;
+      let force = false;
 
-      if (callback_query) {
-        const { from: { id: userId }, message: { message_id: messageId, chat: { id: chatId } }, data } = callback_query;
-        yield ctx.service.telegram.updateButtons({
-          messageId,
-          chatId,
-          data,
-          userId,
-        });
+      if (body.callback_query) {
+        const { from: { id: userId }, message: { message_id: messageId, chat: { id: chatId } }, data } = body.callback_query;
+        const jsonData = JSON.parse(data);
 
-        ctx.body = {
-          success: true,
-        };
+        if (jsonData.like) {
+          yield ctx.service.telegram.updateButtons({
+            messageId,
+            chatId,
+            data: jsonData,
+            userId,
+          });
 
-        return;
+          ctx.body = {
+            success: true,
+          };
+
+          return;
+        } else if (jsonData.force) {
+          message = body.callback_query.message;
+          force = true;
+        }
       }
 
       if (!message) {
@@ -67,14 +75,14 @@ module.exports = app => {
         const memKey = `urls.${urlMD5}`;
         const existMemValue = memStore.get(memKey);
 
-        if (existMemValue) {
-          yield ctx.service.telegram.sendMessage({
-            chatId,
-            replyTo: messageId,
-            message: '图片重复',
-          });
-
+        if (!force && existMemValue) {
           ctx.logger.info(`Duplicate image url: ${url}`);
+
+          yield ctx.service.telegram.sendDuplicateUrlMessage({
+            chatId,
+            messageId,
+            url,
+          });
 
           continue;
         }

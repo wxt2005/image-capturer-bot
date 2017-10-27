@@ -15,7 +15,7 @@ const extractUrlsFromMessage = message => {
   }
 
   const urls = _.chain(entities)
-    .filter(entity => entity.type === 'url')
+    .filter(entity => entity.type === 'url' || entity.type === 'text_link')
     .map(entity => text.slice(entity.offset, entity.offset + entity.length))
     .value();
 

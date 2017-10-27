@@ -34,19 +34,12 @@ module.exports = app => {
 
       const memPath = `messages.chat_${chatId}.msg_${messageId}`;
       const messageData = memStore.get(memPath);
-      let jsonData = {};
-
-      try {
-        jsonData = JSON.parse(data);
-      } catch (e) {
-        return;
-      }
 
       if (!messageData) {
         return;
       }
 
-      if (jsonData.like) {
+      if (data.like) {
         if (Array.isArray(messageData.likeUsers) && messageData.likeUsers.includes(userId)) {
           ctx.logger.info(`Duplicate like, userId: ${userId}`);
           return;
@@ -80,6 +73,38 @@ module.exports = app => {
 
         yield memStore.set(memPath, messageData);
       }
+    }
+
+    * sendDuplicateUrlMessage({ chatId, messageId, url } = {}) {
+      if (!chatId || !messageId) {
+        return null;
+      }
+
+      const { ctx } = this;
+
+      const results = yield ctx.curl(methodUrls.sendMessage, {
+        method: 'POST',
+        contentType: 'json',
+        data: {
+          chat_id: chatId,
+          text: `图片地址重复: <a href="${url}">${url}</a>`,
+          reply_to_message_id: messageId,
+          disable_web_page_preview: true,
+          disable_notification: true,
+          parse_mode: 'HTML',
+          reply_markup: JSON.stringify({
+            inline_keyboard: [[
+              {
+                text: '强制发送',
+                callback_data: JSON.stringify({ force: true }),
+              },
+            ]],
+          }),
+        },
+        dataType: 'json',
+      }).then(response => response.data);
+
+      return results;
     }
 
     * sendMessage({ chatId, message, replyTo } = {}) {
