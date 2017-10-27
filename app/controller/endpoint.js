@@ -74,7 +74,7 @@ module.exports = app => {
             message: '图片重复',
           });
 
-          console.log(`${url} 图片重复`);
+          ctx.logger.info(`Duplicate image url: ${url}`);
 
           continue;
         }

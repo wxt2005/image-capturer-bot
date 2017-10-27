@@ -48,7 +48,7 @@ module.exports = app => {
 
       if (jsonData.like) {
         if (Array.isArray(messageData.likeUsers) && messageData.likeUsers.includes(userId)) {
-          console.log(`Duplicate like, userId: ${userId}`);
+          ctx.logger.info(`Duplicate like, userId: ${userId}`);
           return;
         }
 
