@@ -32,7 +32,7 @@ module.exports = app => {
 
       const { ctx, ctx: { app: { memStore } } } = this;
 
-      const memPath = `messages.${chatId}.${messageId}`;
+      const memPath = `messages.chat_${chatId}.msg_${messageId}`;
       const messageData = memStore.get(memPath);
       let jsonData = {};
 
@@ -192,9 +192,9 @@ module.exports = app => {
           continue;
         }
 
-        const { result: { message_id, chat: { id: chatId } } } = result;
+        const { result: { message_id: messageId, chat: { id: chatId } } } = result;
 
-        const memPath = `messages.${chatId}.${message_id}`;
+        const memPath = `messages.chat_${chatId}.msg_${messageId}`;
         let messageData = memStore.get(memPath);
 
         if (!messageData) {
