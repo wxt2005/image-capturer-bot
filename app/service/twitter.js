@@ -24,7 +24,17 @@ module.exports = app => {
         tweet_mode: 'extended',
       })
         .then(tweet => {
-          const { entities: { media } = {} } = tweet;
+          let media = [];
+          const { entities, extended_entities } = tweet;
+
+          if (Array.isArray(entities.media) && entities.media.length) {
+            media = entities.media;
+          }
+
+          if (Array.isArray(extended_entities.media) && extended_entities.media.length >= media.length) {
+            media = extended_entities.media;
+          }
+
           if (!media || !media.length) {
             return;
           }
