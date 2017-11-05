@@ -4,7 +4,7 @@ const _ = require('lodash');
 const md5 = require('md5');
 const urlUtils = require('url');
 const { extractUrlsFromMessage, extractFullSizePhotoObject } = require('../utils/telegramTools');
-const isDuplicateDebug = require('debug')('duplicate').enabled;
+const isDuplicateDebug = require('debug')('bot:duplicate').enabled;
 
 const TWITTER_HOSTNAME = /^(?:www\.)?twitter\.com$/i;
 const PIXIV_HOSTNAME = /^(?:www|touch)\.pixiv\.net$/i;

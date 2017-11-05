@@ -2,7 +2,7 @@
 
 const { extractMedia } = require('../utils/twitterTools');
 const urlUtils = require('url');
-const debug = require('debug')('twitter');
+const debug = require('debug')('bot:twitter');
 
 module.exports = app => {
   class TwitterService extends app.Service {

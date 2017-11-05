@@ -2,6 +2,7 @@
 
 // const co = require('co');
 const urlUtils = require('url');
+const debug = require('debug')('bot:pixiv');
 
 const fetchUgoiraVideoEndpoint = 'http://ugoira.dataprocessingclub.org/convert';
 const fetchUgoiraDefaultParams = {
@@ -85,8 +86,11 @@ module.exports = app => {
         illustDetail = yield pixivClient.illustDetail(illustId)
           .then(data => data.illust);
       } catch (e) {
+        debug('Fetch error: %O', e);
         throw new Error(`fetch pixiv illust detail failed, id: ${illustId}`);
       }
+
+      debug('Fetch result %O', illustDetail);
 
       let resources = [];
 
