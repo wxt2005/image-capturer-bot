@@ -2,6 +2,7 @@
 
 const { extractMedia } = require('../utils/twitterTools');
 const urlUtils = require('url');
+const debug = require('debug')('twitter');
 
 module.exports = app => {
   class TwitterService extends app.Service {
@@ -24,6 +25,7 @@ module.exports = app => {
         tweet_mode: 'extended',
       })
         .then(tweet => {
+          debug('Received tweet %O', tweet);
           let media = [];
           const { entities, extended_entities } = tweet;
 
