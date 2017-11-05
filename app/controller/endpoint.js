@@ -4,7 +4,7 @@ const _ = require('lodash');
 const md5 = require('md5');
 const urlUtils = require('url');
 const { extractUrlsFromMessage, extractFullSizePhotoObject } = require('../utils/telegramTools');
-const isDebug = require('debug')('*').enabled;
+const isDuplicateDebug = require('debug')('duplicate').enabled;
 
 const TWITTER_HOSTNAME = /^(?:www\.)?twitter\.com$/i;
 const PIXIV_HOSTNAME = /^(?:www|touch)\.pixiv\.net$/i;
@@ -76,7 +76,7 @@ module.exports = app => {
         const memKey = `urls.${urlMD5}`;
         const existMemValue = memStore.get(memKey);
 
-        if (!isDebug && !force && existMemValue) {
+        if (!isDuplicateDebug && !force && existMemValue) {
           ctx.logger.info(`Duplicate image url: ${url}`);
 
           yield ctx.service.telegram.sendDuplicateUrlMessage({
