@@ -21,4 +21,9 @@ module.exports = {
   },
   // wechat robot server end point
   wechatEndpoint: '',
+  // danbooru api key
+  danbooru: {
+    login: '',
+    api_key: '',
+  },
 };

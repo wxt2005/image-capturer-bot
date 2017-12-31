@@ -14,6 +14,9 @@ const dropboxStream = require('dropbox-stream');
 const Store = require('./Store');
 const MEM_STORE = Symbol('Application#MemStore');
 
+const Danbooru = require('../utils/DanbooruApi');
+const DANBOORU_CLIENT = Symbol('Application#DanbooruClient');
+
 module.exports = {
   get memStore() {
     if (!this[MEM_STORE]) {
@@ -78,5 +81,15 @@ module.exports = {
     }
 
     return this[PIXIV_CLIENT];
+  },
+
+  get danbooruClient() {
+    if (!this[DANBOORU_CLIENT]) {
+      const { danbooru: { login, api_key } } = this.config;
+
+      this[DANBOORU_CLIENT] = new Danbooru({ login, api_key });
+    }
+
+    return this[DANBOORU_CLIENT];
   },
 };
